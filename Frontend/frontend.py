@@ -80,8 +80,23 @@ with st.form("user_input_form"):
             )
 
             if response.status_code == 200:
-                st.success("Data sent successfully!")
-                st.json(response.json())
+                #st.success("Data sent successfully!")
+                #st.json(response.json())
+                result=response.json()
+                prediction=result.get('prediction')
+
+                if prediction is not None:
+                    st.markdown(
+                        f"""
+                            <div class='success-box'>
+                                <h4>✅ Prediction result: </h4>
+                                <p><b>Risk Analysis : </b>{prediction}</p>
+                            </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.warning("No Prediction Value Find")
             else:
                 st.error(f"Failed to send data: {response.status_code}")
         except Exception as e:
