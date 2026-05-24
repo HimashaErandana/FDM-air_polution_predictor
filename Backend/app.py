@@ -1,13 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import numpy as np
-import joblib
+import pandas as pd
 from standardizer import Standardizer
 from classify import classify
-import pandas as pd
-
-# Load the model
-model = joblib.load("model/model.pkl")
 
 app = FastAPI(title="Fast AI Server")
 
@@ -27,10 +23,8 @@ class Input(BaseModel):
 
 @app.post("/predict")
 def predict(input: Input):
-
     data_dict = input.model_dump()
     data = pd.DataFrame([data_dict])
-    
     res = Standardizer(data)
     prediction = classify(res)
     print(prediction)

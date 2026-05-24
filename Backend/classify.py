@@ -1,26 +1,40 @@
-import joblib
+import mlflow
+from mlflow_config import setup_mlflow, MODEL_NAME, STAGE_PRODUCTION
 
-# Load your model
-model = joblib.load("model/model.pkl")
+
+setup_mlflow()
+
+
+def load_production_model():
+    try:
+        model = mlflow.pyfunc.load_model(f"models:/{MODEL_NAME}/{STAGE_PRODUCTION}")
+        print(f"Loaded model: {MODEL_NAME} ({STAGE_PRODUCTION})")
+        return model
+    except Exception:
+        print(f"No production model found, trying Staging...")
+        try:
+            model = mlflow.pyfunc.load_model(f"models:/{MODEL_NAME}/Staging")
+            print(f"Loaded model: {MODEL_NAME} (Staging)")
+            return model
+        except Exception as e:
+            print(f"Failed to load from registry: {e}")
+            import joblib
+            model = joblib.load("model/model.pkl")
+            print("Falling back to local model.pkl")
+            return model
+
+
+model = load_production_model()
+
 
 def classify(data):
     prediction = model.predict(data)
     res = ''
-    if prediction == 0:
+    if prediction[0] == 0:
         res = 'risk_high'
-    elif prediction == 1:
+    elif prediction[0] == 1:
         res = 'risk_low'
-    elif prediction == 2:
+    elif prediction[0] == 2:
         res = 'risk_medium'
 
     return res
-
-
-
-
-'''
-"risk_category_High" → 0
-
-"risk_category_Low" → 1
-
-"risk_category_Medium" → 2'''
